@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title></title>
+<style>
+*          { margin:0; padding:0; }     /* to remove the top and left whitespace */
+html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
+canvas     { display:block; }           /* To remove the scrollbars */
+</style>
+</head>
+
+<body>
+
+<canvas id="myCanvas">
+</canvas>
+
+<!--
+* Flip characters horizontally (DONE)
+* Add missing characters
+* Add variable length streams (DONE)
+* Add variable speed streams
+* Have some characters change randomly (DONE)
+* Add character glow (DONE)
+* Add fading
+-->
+
+<script>
+
+  function randChar() {
+    var range = 6*16 + 50;
+	var r = Math.floor(Math.random() * range);
+	var c;
+	if(r < 6*16) {
+	  var a = Math.floor(Math.random() * 6);
+	  var b = Math.floor(Math.random() * 16);
+	  var ch = parseInt('30A0',16)+16*a+b;
+	  c = String.fromCharCode(ch);
+	} else {
+	  var a = Math.floor(Math.random() * 9);
+	  var other = [':', '5', '8', '9', '*', '+', '0', 'Z', '2'];
+	  c = other[a];
+	}
+	return c;
+  }
+
+  var canvas = document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");
+  var prevTime = Date.now();
+  
+  var screenChars = [];
+  var streams = [];
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var chSz = 10;
+  var numStreams = Math.floor(canvas.width/chSz);
+  var numRows = Math.floor(canvas.height/chSz);
+  var maxStreamLen = Math.floor(numRows*1.5);
+  
+  function addStream() {
+    var newStream = new Object;
+    newStream.chars = [];
+
+	newStream.len = Math.floor(Math.random() * maxStreamLen);
+	for(var i=0; i<numRows; i++) {
+	  newStream.chars.push(' ');
+	}
+    newStream.row = Math.floor(Math.random() * (numRows+maxStreamLen));
+    streams.push(newStream);
+  }
+  
+  function updateStreams() {
+    for(var i=0; i<numStreams; i++) {
+	
+	  var streamLen = streams[i].len;
+	
+	  var row = streams[i].row;
+	  if(row >= 0) {
+		streams[i].chars[row] = randChar();
+	  }
+	  if(row >= streamLen) {
+	    streams[i].chars[row-streamLen] = ' ';
+	  }
+	  
+	  for(var j=0; j<2; j++) {
+	    var ri = Math.floor(Math.random() * streamLen);
+	    streams[i].chars[row-ri] = randChar();
+	  }
+
+      var rix = Math.floor(Math.random() * numRows * 20);
+	  if(rix < numRows) {
+	    streams[i].chars[rix] = randChar();
+	  }
+	  
+	  streams[i].row++;
+	  if(row > numRows + streamLen) {
+	    streams[i].row = 0;
+		streams[i].len = Math.floor(Math.random() * maxStreamLen);
+	  }
+	}
+  }
+  
+  for(var i=0; i<numStreams; i++) {
+    addStream();
+  }
+
+  window.addEventListener('resize', resizeCanvas, false);
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    //draw();
+  }
+  resizeCanvas();
+
+  ctx.translate(canvas.width,0);  
+  ctx.scale(-1.0,1.0);
+
+  
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);	
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0, canvas.width, canvas.height);
+	  
+	//ctx.font = "bold " + chSz + "px Courier";
+	ctx.font = "bold " + (chSz+2) + "px Courier";
+	//ctx.font = chSz + "px Courier New";
+	ctx.fillStyle="#00ff00";
+	
+	ctx.shadowColor = "#80ff80";
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 30;
+	
+	var col = 0;
+	for (var stream in streams) {
+	  var row = 0;
+	  for (var ch in streams[stream].chars) {
+	    var c = streams[stream].chars[ch];
+		if(row == streams[stream].row-1) {
+		  ctx.fillStyle="#c0f4f4 ";
+		//} else if(row < streams[stream].row - streams[stream].len + 3) {
+		//  ctx.fillStyle="#408040";
+		} else {
+		  ctx.fillStyle="#60c060";
+		}
+		if(c != ' ') {
+	      ctx.fillText(c,chSz*col,chSz*row);
+		  ctx.fillText(c,chSz*col,chSz*row);
+		}
+		row++;
+      }
+	  col++;
+	}
+  }
+  
+  function update() {
+	var now = Date.now();
+	var dt = now - prevTime;
+    updateStreams();
+    draw();
+  }
+  
+  window.setInterval(function(){update()}, 40);
+
+</script>
+
+</body>
+
+</html>
