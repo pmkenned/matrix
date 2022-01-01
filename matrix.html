@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<title></title>
+<title>What is the Matrix?</title>
 <style>
 *          { margin:0; padding:0; }     /* to remove the top and left whitespace */
 html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
@@ -16,32 +16,51 @@ canvas     { display:block; }           /* To remove the scrollbars */
 </canvas>
 
 <!--
-* Flip characters horizontally (DONE)
+TODO:
 * Add missing characters
-* Add variable length streams (DONE)
 * Add variable speed streams
+* Add fading
+DONE:
+* Flip characters horizontally (DONE)
+* Add variable length streams (DONE)
 * Have some characters change randomly (DONE)
 * Add character glow (DONE)
-* Add fading
 -->
 
 <script>
 
+  const font = "Courier";
+
+  //const shadowColor = "#80ff80";
+  const shadowColor = "hsl(130, 90%, 20%)";
+  const shadowBlur = 30;
+
+  //const leadingColor = "#c0f4f4";
+  const leadingColor = "hsl(130, 60%, 85%)";
+  const leadingShadowColor = "hsl(130, 60%, 85%)";
+  const leadingShadowBlur = 10;
+
+  //const trailingColor = "#408040";
+
+  //const normalColor = "#70d299";
+  //const normalColor = "#60c060";
+  const normalColor = "hsl(130, 60%, 50%)";
+
   function randChar() {
     var range = 6*16 + 50;
-	var r = Math.floor(Math.random() * range);
-	var c;
-	if(r < 6*16) {
-	  var a = Math.floor(Math.random() * 6);
-	  var b = Math.floor(Math.random() * 16);
-	  var ch = parseInt('30A0',16)+16*a+b;
-	  c = String.fromCharCode(ch);
-	} else {
-	  var a = Math.floor(Math.random() * 9);
-	  var other = [':', '5', '8', '9', '*', '+', '0', 'Z', '2'];
-	  c = other[a];
-	}
-	return c;
+    var r = Math.floor(Math.random() * range);
+    var c;
+    if(r < 6*16) {
+      var a = Math.floor(Math.random() * 6);
+      var b = Math.floor(Math.random() * 16);
+      var ch = parseInt('30A0',16)+16*a+b;
+      c = String.fromCharCode(ch);
+    } else {
+      var a = Math.floor(Math.random() * 9);
+      var other = [':', '5', '8', '9', '*', '+', '0', 'Z', '2'];
+      c = other[a];
+    }
+    return c;
   }
 
   var canvas = document.getElementById("myCanvas");
@@ -52,7 +71,7 @@ canvas     { display:block; }           /* To remove the scrollbars */
   var streams = [];
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  var chSz = 10;
+  var chSz = 20;
   var numStreams = Math.floor(canvas.width/chSz);
   var numRows = Math.floor(canvas.height/chSz);
   var maxStreamLen = Math.floor(numRows*1.5);
@@ -61,43 +80,43 @@ canvas     { display:block; }           /* To remove the scrollbars */
     var newStream = new Object;
     newStream.chars = [];
 
-	newStream.len = Math.floor(Math.random() * maxStreamLen);
-	for(var i=0; i<numRows; i++) {
-	  newStream.chars.push(' ');
-	}
+    newStream.len = Math.floor(Math.random() * maxStreamLen);
+    for(var i=0; i<numRows; i++) {
+      newStream.chars.push(' ');
+    }
     newStream.row = Math.floor(Math.random() * (numRows+maxStreamLen));
     streams.push(newStream);
   }
   
   function updateStreams() {
     for(var i=0; i<numStreams; i++) {
-	
-	  var streamLen = streams[i].len;
-	
-	  var row = streams[i].row;
-	  if(row >= 0) {
-		streams[i].chars[row] = randChar();
-	  }
-	  if(row >= streamLen) {
-	    streams[i].chars[row-streamLen] = ' ';
-	  }
-	  
-	  for(var j=0; j<2; j++) {
-	    var ri = Math.floor(Math.random() * streamLen);
-	    streams[i].chars[row-ri] = randChar();
-	  }
+
+      var streamLen = streams[i].len;
+
+      var row = streams[i].row;
+      if(row >= 0) {
+        streams[i].chars[row] = randChar();
+      }
+      if(row >= streamLen) {
+        streams[i].chars[row-streamLen] = ' ';
+      }
+      
+      for(var j=0; j<2; j++) {
+        var ri = Math.floor(Math.random() * streamLen);
+        streams[i].chars[row-ri] = randChar();
+      }
 
       var rix = Math.floor(Math.random() * numRows * 20);
-	  if(rix < numRows) {
-	    streams[i].chars[rix] = randChar();
-	  }
-	  
-	  streams[i].row++;
-	  if(row > numRows + streamLen) {
-	    streams[i].row = 0;
-		streams[i].len = Math.floor(Math.random() * maxStreamLen);
-	  }
-	}
+      if(rix < numRows) {
+        streams[i].chars[rix] = randChar();
+      }
+      
+      streams[i].row++;
+      if(row > numRows + streamLen) {
+        streams[i].row = 0;
+        streams[i].len = Math.floor(Math.random() * maxStreamLen);
+      }
+    }
   }
   
   for(var i=0; i<numStreams; i++) {
@@ -117,45 +136,44 @@ canvas     { display:block; }           /* To remove the scrollbars */
 
   
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);	
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle="black";
     ctx.fillRect(0,0, canvas.width, canvas.height);
-	  
-	//ctx.font = "bold " + chSz + "px Courier";
-	ctx.font = "bold " + (chSz+2) + "px Courier";
-	//ctx.font = chSz + "px Courier New";
-	ctx.fillStyle="#00ff00";
-	
-	ctx.shadowColor = "#80ff80";
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	ctx.shadowBlur = 30;
-	
-	var col = 0;
-	for (var stream in streams) {
-	  var row = 0;
-	  for (var ch in streams[stream].chars) {
-	    var c = streams[stream].chars[ch];
-		if(row == streams[stream].row-1) {
-		  ctx.fillStyle="#c0f4f4 ";
-		//} else if(row < streams[stream].row - streams[stream].len + 3) {
-		//  ctx.fillStyle="#408040";
-		} else {
-		  ctx.fillStyle="#60c060";
-		}
-		if(c != ' ') {
-	      ctx.fillText(c,chSz*col,chSz*row);
-		  ctx.fillText(c,chSz*col,chSz*row);
-		}
-		row++;
+      
+    ctx.font = `bold ${chSz+3}px ${font}`;
+
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowBlur = shadowBlur;
+
+    var col = 0;
+    for (var stream in streams) {
+      var row = 0;
+      for (var ch in streams[stream].chars) {
+        var c = streams[stream].chars[ch];
+        if(row == streams[stream].row-1) {
+          ctx.shadowBlur = leadingShadowBlur;
+          ctx.shadowColor = leadingShadowColor;
+          ctx.fillStyle = leadingColor;
+        //} else if(row < streams[stream].row - streams[stream].len + 3) {
+        //  ctx.fillStyle = trailingColor;
+        } else {
+          ctx.shadowBlur = shadowBlur;
+          ctx.shadowColor = shadowColor;
+          ctx.fillStyle = normalColor;
+        }
+        if(c != ' ') {
+          ctx.fillText(c,chSz*col,chSz*row);
+        }
+        row++;
       }
-	  col++;
-	}
+      col++;
+    }
   }
   
   function update() {
-	var now = Date.now();
-	var dt = now - prevTime;
+    var now = Date.now();
+    var dt = now - prevTime;
     updateStreams();
     draw();
   }
